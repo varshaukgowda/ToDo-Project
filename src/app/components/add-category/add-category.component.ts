@@ -18,7 +18,7 @@ export class AddCategoryComponent {
 
   show() {
     this.isVisible = true;
-    this.categoryName = ''; // Reset input when showing modal
+    this.categoryName = ''; 
 
   }
 

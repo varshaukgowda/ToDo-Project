@@ -27,7 +27,6 @@ export class TaskService {
   }
 
   saveTasks(categoryName: string, tasks: Task[]): void {
-    // First filter to ensure only tasks for this category are saved
     const categoryTasks = tasks.filter(task => task.category === categoryName);
     localStorage.setItem(
       this.getStorageKey(categoryName),
@@ -45,12 +44,10 @@ export class TaskService {
 
 
   deleteCategory(categoryName: string): void {
-    // 1. Remove the category from the categories list
     const categories = this.getCategories();
     const updatedCategories = categories.filter(cat => cat !== categoryName);
     this.saveCategories(updatedCategories);
 
-    // 2. Remove all tasks for this category
     localStorage.removeItem(this.getStorageKey(categoryName));
   }
 

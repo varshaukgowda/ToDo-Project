@@ -50,7 +50,7 @@ export class SidenavComponent {
    handleCategoryAdded(categoryName: string) {
     this.categories = this.todoService.addCategory(categoryName);
     this.hideAddCategoryModal();
-     this.openCategory(categoryName); // Auto-open the new category
+     this.openCategory(categoryName);
   }
 
   editCategory(category:string){
@@ -68,7 +68,6 @@ export class SidenavComponent {
   deleteCategory(categoryName: string) {
   if (confirm(`Delete ${categoryName} and all its tasks?`)) {
     this.taskService.deleteCategory(categoryName);
-    // Refresh your categories list
     this.categories = this.taskService.getCategories();
   }
 
@@ -88,7 +87,7 @@ export class SidenavComponent {
     if (this.router.url !== '/today') {
     this.router.navigate(['/today']);
   }
-  this.activeCategory = null; // Clear active category
+  this.activeCategory = null;
    this.categorySelected.emit(); 
 }
 
@@ -97,7 +96,7 @@ export class SidenavComponent {
 
   onCategoryClick(category: string) {
   this.categorySelected.emit(category);
-  this.activeCategory = category; // Highlight the selected category
+  this.activeCategory = category; 
 
 }
 

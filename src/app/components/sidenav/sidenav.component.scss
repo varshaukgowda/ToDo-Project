@@ -16,7 +16,6 @@
     transform: translateX(0);
   }
   
-  // Scrollbar styling
   &::-webkit-scrollbar {
     width: 6px;
   }
@@ -79,7 +78,6 @@
     transform: translateX(4px) scale(0.98);
   }
   
-  // Active state
   &.active {
     background: rgba(102, 126, 234, 0.1);
     color: #667eea;
@@ -123,8 +121,8 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0.5rem 1.5rem; // Reduced top padding from 1rem to 0.5rem
-  margin-top: 0.5rem; // Reduced from 1rem to 0.5rem
+  padding: 0.5rem 1.5rem; 
+  margin-top: 0.5rem; 
   color: #666;
   font-size: 0.75rem;
   font-weight: 600;

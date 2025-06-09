@@ -18,10 +18,9 @@ export class TodayComponent implements OnInit {
   isMenuOpen = false;
   categories: string[] = []; 
   activeCategory: string | null = null;
-  showTaskInput = false; // Changed from showTaskModal to showTaskInput
+  showTaskInput = false; 
   newTaskName = '';
   
-  // Store tasks by category
   categoryTasks: {[key: string]: any[]} = {
     'Today': []
   };
@@ -31,10 +30,9 @@ export class TodayComponent implements OnInit {
   ngOnInit(): void {
     this.checkTasksForToday();
     this.loadCategories();
-    // this.showTaskInput = true;
+   
   }
 
-  // Category methods
   showAddCategoryModal() {
     this.showCategoryModal = true;
   }
@@ -45,10 +43,8 @@ export class TodayComponent implements OnInit {
 
   addCategory(categoryName: string) {
     if (categoryName.trim()) {
-      // Add the new category to your service
       this.categories = this.todoservice.addCategory(categoryName.trim());
       
-      // Initialize tasks array for this category if it doesn't exist
       if (!this.categoryTasks[categoryName]) {
         this.categoryTasks[categoryName] = [];
       }
@@ -59,10 +55,9 @@ export class TodayComponent implements OnInit {
     }
   }
 
-  // Task methods
   openCategoryTasks(category: string) {
     this.activeCategory = category;
-    this.showTaskInput = true; // Changed to show the input field instead of modal
+    this.showTaskInput = true; 
   }
 
 
@@ -74,7 +69,6 @@ export class TodayComponent implements OnInit {
       this.categoryTasks[category] = [];
     }
     
-    // Prevent duplicate tasks
     if (!this.categoryTasks[category].some(t => t.name === this.newTaskName.trim())) {
       this.categoryTasks[category].push({
         id: Date.now(),
@@ -91,7 +85,6 @@ export class TodayComponent implements OnInit {
   }
 }
 
-  // Navigation methods
   toggleMenu(): void {
     this.isMenuOpen = !this.isMenuOpen;
   }
@@ -100,14 +93,12 @@ export class TodayComponent implements OnInit {
     this.isMenuOpen = false;
   }
 
-  // Data methods
   private checkTasksForToday(): void {
     console.log('Checking tasks for today...');
   }
 
   private loadCategories(): void {
     this.categories = this.todoservice.getCategories();
-    // Initialize tasks for each category
     this.categories.forEach(category => {
       if (!this.categoryTasks[category]) {
         this.categoryTasks[category] = [];
@@ -115,7 +106,6 @@ export class TodayComponent implements OnInit {
     });
   }
 
-  // Task input management
   hideTaskInput() {
     this.showTaskInput = false;
     this.newTaskName = '';

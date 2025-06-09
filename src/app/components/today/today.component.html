@@ -1,94 +1,4 @@
-<!-- <div class="today-container">
-  <app-sidenav 
-    [isOpen]="isMenuOpen" 
-    (close)="closeMenu()" 
-    (addCategory)="showAddCategoryModal()"
-    (categorySelected)="openCategoryTasks($event)">
-  </app-sidenav>
-  
-  <div class="content-area" [class.menu-open]="isMenuOpen">
-    <header class="header">
-      <button class="menu-btn" (click)="toggleMenu()">
-        <div class="hamburger-icon">
-          <span></span>
-          <span></span>
-          <span></span>
-        </div>
-      </button>
-      <h1 class="title">Today</h1>
-    </header>
-
-    <div class="new-task-input" >
-      <input type="text" 
-             placeholder="Add a new task" 
-             [(ngModel)]="newTaskName"
-             (keyup.enter)="addTask()"
-             
-             autofocus>
-      <button (click)="addTask()" [disabled]="!newTaskName.trim()">+</button>
-    </div>
-
-    <main class="main-content">
-      <div class="task-section" *ngIf="activeTasks.length > 0">
-        <div class="task-list">
-          <div class="task-item" *ngFor="let task of activeTasks">
-            <input type="checkbox" (change)="markAsDone(task)">
-            <span class="task-name">{{ task.name }}</span>
-            <div class="task-actions">
-              <button class="pin-btn" (click)="togglePin(task)">
-                <span class="material-icons">push_pin</span>
-              </button>
-              <button class="edit-btn" (click)="editTask(task)">
-                <span class="material-icons">edit</span>
-              </button>
-              <button class="delete-btn" (click)="deleteTask(task)">
-                <span class="material-icons">delete</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
- 
-
-      <div class="task-section" *ngIf="completedTasks.length > 0">
-        <h3 class="completed-title">Completed</h3>
-        <div class="task-list completed">
-          <div class="task-item" *ngFor="let task of completedTasks">
-            <input type="checkbox" checked (change)="markAsUndone(task)">
-            <span class="task-name">{{ task.name }}</span>
-            <div class="task-actions">
-              <button class="delete-btn" (click)="deleteTask(task); $event.stopPropagation()">
-                <span class="material-icons">delete</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="empty-state" *ngIf="activeTasks.length === 0 && completedTasks.length === 0">
-        <div class="icon-container">
-          <img src="assets/no-task.png" alt="No tasks illustration" class="empty-image">
-        </div>
-        <h2 class="empty-title">No tasks today</h2>
-        <p class="empty-subtitle">enjoy a wonderful day</p>
-      </div>
-      
-      
-    </main>
-  </div>
-
- 
-
-  <app-add-category 
-    *ngIf="showCategoryModal"
-    (categoryAdded)="addCategory($event)"
-    (closeModalEvent)="hideAddCategoryModal()">
-  </app-add-category>
-</div> -->
-
-
 <div class="today-container">
-  <!-- Sidenav Component -->
   <app-sidenav 
     [isOpen]="isMenuOpen" 
     (close)="closeMenu()" 
@@ -120,7 +30,6 @@
     </div>
 
     <main class="main-content">
-      <!-- Active Tasks Section -->
       <div class="tasks-list" *ngIf="activeTasks.length > 0">
         <div class="task-item" 
              *ngFor="let task of activeTasks; let i = index"
@@ -148,7 +57,6 @@
         </div>
       </div>
 
-      <!-- Completed Tasks Section -->
       <div class="completed-section" *ngIf="completedTasks.length > 0">
         <h3 class="completed-header">Completed</h3>
         <div class="task-item done" *ngFor="let task of completedTasks">
@@ -166,7 +74,6 @@
         </div>
       </div>
 
-      <!-- Empty State -->
       <div class="empty-state" *ngIf="activeTasks.length === 0 && completedTasks.length === 0">
         <div class="icon-container">
           <img src="assets/no-task.png" alt="No tasks illustration" class="empty-image">
@@ -177,7 +84,6 @@
     </main>
   </div>
 
-  <!-- Category Modal -->
   <app-add-category 
     *ngIf="showCategoryModal"
     (categoryAdded)="addCategory($event)"
