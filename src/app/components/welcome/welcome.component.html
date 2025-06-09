@@ -1,0 +1,14 @@
+<div class="welcome-container">
+  <h1 class="welcome-title">Getting Started</h1>
+  
+  <div class="task-section">
+    <div class="task-item" *ngFor="let task of tasks">
+      <input type="checkbox" 
+             [checked]="task.completed"
+             (change)="toggleTask(task)">
+      <span class="task-name" [class.completed]="task.completed">
+        {{ task.name }}
+      </span>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+.welcome-container {
+  padding: 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', sans-serif;
+
+  .welcome-title {
+    color: #333;
+    font-size: 1.8rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+  }
+
+  .task-section {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    background: white;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+
+    input[type="checkbox"] {
+      width: 18px;
+      height: 18px;
+      accent-color: #4F7EFF;
+      cursor: pointer;
+    }
+
+    .task-name {
+      font-size: 1rem;
+      color: #333;
+
+      &.completed {
+        text-decoration: line-through;
+        color: #666;
+        opacity: 0.7;
+      }
+
+      &[style*="bold"] {
+        font-weight: bold;
+      }
+    }
+  }
+}
