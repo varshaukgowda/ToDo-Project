@@ -29,7 +29,7 @@ export class TodayComponent implements OnInit {
 
   ngOnInit(): void {
     this.checkTasksForToday();
-    this.loadCategories();
+    // this.loadCategories();
    
   }
 
@@ -63,7 +63,7 @@ export class TodayComponent implements OnInit {
 
   addTask() {
   if (this.newTaskName.trim()) {
-    const category = this.activeCategory || 'Today';
+    const category = 'Today'; 
     
     if (!this.categoryTasks[category]) {
       this.categoryTasks[category] = [];
@@ -71,7 +71,8 @@ export class TodayComponent implements OnInit {
     
     if (!this.categoryTasks[category].some(t => t.name === this.newTaskName.trim())) {
       this.categoryTasks[category].push({
-        id: Date.now(),
+        id: Date.now(),   
+        // generates unique ID based on timestamp.
         name: this.newTaskName.trim(),
         completed: false,
         pinned: false
@@ -79,7 +80,8 @@ export class TodayComponent implements OnInit {
       
       this.newTaskName = '';
       this.hideTaskInput();
-    } else {
+    } 
+    else {
       alert('This task already exists!');
     }
   }
@@ -97,14 +99,14 @@ export class TodayComponent implements OnInit {
     console.log('Checking tasks for today...');
   }
 
-  private loadCategories(): void {
-    this.categories = this.todoservice.getCategories();
-    this.categories.forEach(category => {
-      if (!this.categoryTasks[category]) {
-        this.categoryTasks[category] = [];
-      }
-    });
-  }
+  // private loadCategories(): void {
+  //   this.categories = this.todoservice.getCategories();
+  //   this.categories.forEach(category => {
+  //     if (!this.categoryTasks[category]) {
+  //       this.categoryTasks[category] = [];
+  //     }
+  //   });
+  // }
 
   hideTaskInput() {
     this.showTaskInput = false;
@@ -135,6 +137,8 @@ export class TodayComponent implements OnInit {
 
   togglePin(task: any) {
     task.pinned = !task.pinned;
+    
+    
   }
 
   editTask(task: any) {

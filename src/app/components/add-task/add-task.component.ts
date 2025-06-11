@@ -131,7 +131,7 @@ export class AddTaskComponent implements OnInit, OnChanges {
   }
 
   openEditDialog(task: Task) {
-    const newName = prompt('Edit task:', task.name);
+    const newName = prompt('Edit task name:', task.name);
     if (newName !== null && newName.trim()) {
       this.tasks = this.tasks.map(t => 
         t.id === task.id ? {...t, name: newName.trim()} : t

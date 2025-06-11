@@ -11,7 +11,7 @@
       <input 
         type="text"
         [(ngModel)]="newTaskName"
-        placeholder="What needs to be done?"
+        placeholder="Add a new task"
         (keyup.enter)="addTask()"
         #taskInput="ngModel"
         required
@@ -80,7 +80,7 @@
 
   <div class="completed-section" *ngIf="completedTasks.length > 0">
     <div class="completed-header">
-      <span>Completed ({{completedTasks.length}})</span>
+      <span>Completed</span>
       <div class="divider"></div>
     </div>
     <div class="tasks-list completed">
