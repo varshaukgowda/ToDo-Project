@@ -2,7 +2,7 @@ import { Component,EventEmitter,Input,Output} from '@angular/core';
 import { AddCategoryComponent } from '../add-category/add-category.component';
 import { TodayComponent } from '../today/today.component';
 import { CommonModule } from '@angular/common';
-import { TodoService } from '../../services/services/todo.service';
+import { TodoService } from '../../services/category/todo.service';
 import { AddTaskComponent } from "../add-task/add-task.component";
 import { Router } from '@angular/router';
 import { TaskService } from '../../services/task/services.service';

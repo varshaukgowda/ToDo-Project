@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidenavComponent } from "../sidenav/sidenav.component";
 import { FormsModule } from '@angular/forms';
-import { TodoService } from '../../services/services/todo.service';
+import { TodoService } from '../../services/category/todo.service';
 import { AddCategoryComponent } from "../add-category/add-category.component";
 import { Router } from '@angular/router';
 
