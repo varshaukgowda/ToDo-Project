@@ -21,7 +21,7 @@ export class TodoService {
       const categories = this.storage.getItem(this.STORAGE_KEY);
       return categories ? JSON.parse(categories) : [];
     }
-    return []; // Fallback for SSR
+    return []; 
   }
 
   saveCategories(categories: string[]): void {
@@ -39,9 +39,9 @@ export class TodoService {
     return categories;
   }
 
-   deleteCategory(category: string): string[] {
-    const categories = this.getCategories().filter(c => c !== category);
-    this.saveCategories(categories);
-    return categories;
-  }
+  //  deleteCategory(category: string): string[] {
+  //   const categories = this.getCategories().filter(c => c !== category);
+  //   this.saveCategories(categories);
+  //   return categories;
+  // }
 }

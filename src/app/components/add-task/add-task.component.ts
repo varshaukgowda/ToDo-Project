@@ -21,6 +21,7 @@ interface Task {
   styleUrl: './add-task.component.scss'
 })
 export class AddTaskComponent implements OnInit, OnChanges {
+
   @Input() categoryName: string = '';
   @Input() isActive: boolean = false;
   @Output() closeCategory = new EventEmitter<void>();
@@ -34,7 +35,7 @@ export class AddTaskComponent implements OnInit, OnChanges {
   constructor(private taskService: TaskService) {}
 
   ngOnInit() {
-    this.setTodayDate();
+    // this.setTodayDate();
     this.loadTasks();
   }
 

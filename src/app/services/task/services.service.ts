@@ -13,6 +13,7 @@ interface Task {
 @Injectable({
   providedIn: 'root'
 })
+
 export class TaskService {
   private readonly STORAGE_PREFIX = 'tasks_';
     private readonly CATEGORIES_KEY = 'task_categories';
