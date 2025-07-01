@@ -53,9 +53,9 @@ export class SidenavComponent {
      this.openCategory(categoryName);
   }
 
-  editCategory(category:string){
-    console.log('edit category',category);
-  }
+  // editCategory(category:string){
+  //   console.log('edit category',category);
+  // }
 
   // deleteCategory(category:string){
   //   console.log("delete category",category);
@@ -81,7 +81,6 @@ export class SidenavComponent {
     this.activeCategory = null;
   }
 
-  
   navigateToToday() {
     console.log('today');
     if (this.router.url !== '/today') {
@@ -90,9 +89,6 @@ export class SidenavComponent {
   this.activeCategory = null;
    this.categorySelected.emit(); 
 }
-
-
-
 
   onCategoryClick(category: string) {
   this.categorySelected.emit(category);

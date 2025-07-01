@@ -6,7 +6,7 @@ import { PLATFORM_ID } from '@angular/core';
 
 @Component({
   selector: 'app-root',
-  imports: [TodayComponent,RouterOutlet],
+  imports: [TodayComponent],
   providers: [
     { provide: PLATFORM_ID, useValue: 'browser' }
   ],

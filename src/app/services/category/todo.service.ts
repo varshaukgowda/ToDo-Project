@@ -39,9 +39,9 @@ export class TodoService {
     return categories;
   }
 
-  //  deleteCategory(category: string): string[] {
-  //   const categories = this.getCategories().filter(c => c !== category);
-  //   this.saveCategories(categories);
-  //   return categories;
-  // }
+   deleteCategory(category: string): string[] {
+    const categories = this.getCategories().filter(c => c !== category);
+    this.saveCategories(categories);
+    return categories;
+  }
 }

@@ -10,6 +10,7 @@ import { CommonModule } from '@angular/common';
 })
 
 export class AddCategoryComponent {
+
 @Output() categoryAdded = new EventEmitter<string>();
 @Output() closeModalEvent = new EventEmitter<void>();
   
@@ -34,9 +35,6 @@ export class AddCategoryComponent {
       this.categoryAdded.emit(this.categoryName.trim());
       this.categoryName = '';
       this.closeModal();
-     
     }
   }
-
-  
 }

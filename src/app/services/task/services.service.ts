@@ -2,12 +2,16 @@
 import { Injectable } from '@angular/core';
 
 interface Task {
+  // updatedAt: Date;
+  priority: string;
+  subtasks: any;
   id: string;
   name: string;
   done: boolean;
   pinned: boolean;
   category: string;
   createdAt: Date;
+
 }
 
 @Injectable({

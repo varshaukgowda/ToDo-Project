@@ -16,61 +16,251 @@
         </div>
       </button>
       
-      <h1 class="title">Today</h1>
+      <h1 class="title">{{ activeCategory || 'Today' }}</h1>
     </header>
 
     <div class="add-task-container">
-      <input type="text" 
-             placeholder="Add a new task" 
-             [(ngModel)]="newTaskName"
-             (keyup.enter)="addTask()"
-             autofocus>
-      <button class="add-btn" (click)="addTask()" [disabled]="!newTaskName.trim()">
+      <div class="task-input-group">
+        <input 
+          type="text"
+          [(ngModel)]="newTaskName"
+          placeholder="Add new task"
+          (keyup.enter)="addTask()"
+          #taskInput
+          class="task-name-input"
+          aria-label="Task name"
+        >
+        
+        <div class="date-time-picker-wrapper">
+          <div class="date-picker">
+            <input 
+              type="date"
+              [(ngModel)]="selectedDate"
+              class="date-input"
+              [min]="minDate"
+              aria-label="Due date"
+            >
+          </div>
+          <div class="time-picker" *ngIf="selectedDate">
+            <input
+              type="time"
+              [(ngModel)]="selectedTime"
+              class="time-input"
+              aria-label="Due time"
+            >
+          </div>
+          <div class="priority-select-wrapper">
+            <select 
+              [(ngModel)]="newTaskPriority"
+              class="priority-select"
+              [ngClass]="{
+                'high-priority': newTaskPriority === 'High',
+                'medium-priority': newTaskPriority === 'Medium',
+                'low-priority': newTaskPriority === 'Low'
+              }"
+              aria-label="Task priority"
+            >
+              <option value="None">No Priority</option>
+              <option value="Low">Low Priority</option>
+              <option value="Medium">Medium Priority</option>
+              <option value="High">High Priority</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <button 
+        class="add-btn"
+        (click)="addTask()"
+        [disabled]="!newTaskName.trim()"
+        aria-label="Add task"
+      >
         <span class="material-icons">add</span>
       </button>
     </div>
 
     <main class="main-content">
       <div class="tasks-list" *ngIf="activeTasks.length > 0">
-        <div class="task-item" 
-             *ngFor="let task of activeTasks; let i = index"
-             [class.pinned]="task.pinned"
-             [style.animation-delay.s]="i * 0.1">
-          <div class="task-main">
-            <button class="done-btn" (click)="markAsDone(task)">
-              <span class="material-icons">radio_button_unchecked</span>
-            </button>
-            <span class="task-name">{{ task.name }}</span>
+        <div 
+          class="task-item"
+          *ngFor="let task of activeTasks; let i = index"
+          [class.done]="task.completed"
+          [class.pinned]="task.pinned"
+          [class.has-due-date]="task.scheduledAt"
+          [class.high-priority]="task.priority === 'High'"
+          [class.medium-priority]="task.priority === 'Medium'"
+          [class.low-priority]="task.priority === 'Low'"
+          [style.animation-delay.ms]="i * 100"
+        >
+          <div class="task-row">
+            <div class="task-main">
+              <button 
+                class="done-btn" 
+                (click)="markAsDone(task)"
+                [attr.aria-label]="task.completed ? 'Mark task as incomplete' : 'Mark task as complete'"
+              >
+                <span class="material-icons">
+                  {{ task.completed ? 'check_circle' : 'radio_button_unchecked' }}
+                </span>
+              </button>
+              <div class="task-content">
+                <span class="task-name">{{ task.name }}</span>
+                <div class="task-meta" *ngIf="task.scheduledAt">
+                  <span class="due-date">{{ formatDate(task.scheduledAt) }}</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="task-actions">
+              <select 
+                [(ngModel)]="task.priority"
+                (change)="updateTaskPriority(task, task.priority)"
+                class="priority-select"
+                [ngClass]="{
+                  'high-priority': task.priority === 'High',
+                  'medium-priority': task.priority === 'Medium',
+                  'low-priority': task.priority === 'Low'
+                }"
+                aria-label="Change task priority"
+              >
+                <option value="None">No Priority</option>
+                <option value="Low">Low Priority</option>
+                <option value="Medium">Medium Priority</option>
+                <option value="High">High Priority</option>
+              </select>
+              <button 
+                class="pin-btn" 
+                (click)="togglePin(task)" 
+                [title]="task.pinned ? 'Unpin task' : 'Pin task'"
+                [attr.aria-label]="task.pinned ? 'Unpin task' : 'Pin task'"
+              >
+                <span class="material-icons">
+                  {{ task.pinned ? 'push_pin' : 'outlined_flag' }}
+                </span>
+              </button>
+              <button 
+                class="edit-btn" 
+                (click)="editTask(task)" 
+                title="Edit task"
+                aria-label="Edit task"
+              >
+                <span class="material-icons">edit</span>
+              </button>
+              <button 
+                class="add-subtask-btn" 
+                (click)="toggleAddSubtask(task)" 
+                title="Add subtask"
+                aria-label="Add subtask"
+              >
+                <span class="material-icons">add</span>
+              </button>
+              <button 
+                class="delete-btn" 
+                (click)="deleteTask(task)" 
+                title="Delete task"
+                aria-label="Delete task"
+              >
+                <span class="material-icons">delete</span>
+              </button>
+            </div>
           </div>
-          <div class="task-actions">
-            <button class="pin-btn" 
-                    (click)="togglePin(task)"
-                    [class.active]="task.pinned">
-              <span class="material-icons">{{ task.pinned ? 'push_pin' : 'push_pin' }}</span>
-            </button>
-            <button class="edit-btn" (click)="editTask(task)">
-              <span class="material-icons">edit</span>
-            </button>
-            <button class="delete-btn" (click)="deleteTask(task)">
-              <span class="material-icons">delete</span>
-            </button>
+
+          <div class="subtasks-container" *ngIf="(task.subtasks && task.subtasks.length > 0) || task.isAddingSubtask">
+            <div class="subtask-connector"></div>
+            
+            <div class="add-subtask-input" *ngIf="task.isAddingSubtask">
+              <div class="subtask-indicator">
+                <span class="material-icons">subdirectory_arrow_right</span>
+              </div>
+              <input
+                type="text"
+                [(ngModel)]="task.newSubtaskName"
+                placeholder="Add subtask"
+                (keyup.enter)="addSubtask(task)"
+                class="subtask-input"
+                aria-label="Subtask name"
+              >
+            </div>
+
+            <div 
+              class="task-item subtask" 
+              *ngFor="let subtask of task.subtasks"
+              [class.done]="subtask.completed"
+            >
+              <div class="subtask-indicator"></div>
+              <div class="task-main">
+                <button 
+                  class="done-btn" 
+                  (click)="toggleSubtaskDone(subtask)"
+                  [attr.aria-label]="subtask.completed ? 'Mark subtask as incomplete' : 'Mark subtask as complete'"
+                >
+                  <span class="material-icons">
+                    {{ subtask.completed ? 'check_circle' : 'radio_button_unchecked' }}
+                  </span>
+                </button>
+                <div class="task-content">
+                  <span class="task-name">{{ subtask.name }}</span>
+                </div>
+              </div>
+              <div class="task-actions">
+                <button 
+                  class="delete-btn" 
+                  (click)="deleteSubtask(task, subtask.id)" 
+                  title="Delete subtask"
+                  aria-label="Delete subtask"
+                >
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="completed-section" *ngIf="completedTasks.length > 0">
-        <h3 class="completed-header">Completed</h3>
-        <div class="task-item done" *ngFor="let task of completedTasks">
-          <div class="task-main">
-            <button class="done-btn" (click)="markAsUndone(task)">
-              <span class="material-icons">check_circle</span>
-            </button>
-            <span class="task-name">{{ task.name }}</span>
-          </div>
-          <div class="task-actions">
-            <button class="delete-btn" (click)="deleteTask(task); $event.stopPropagation()">
-              <span class="material-icons">delete</span>
-            </button>
+        <div class="completed-header">
+          <span>Completed ({{completedTasks.length}})</span>
+        </div>
+        <div class="tasks-list completed">
+          <div 
+            class="task-item done"
+            *ngFor="let item of completedTasks"
+            [class.subtask-item]="!isTask(item)"
+          >
+            <div class="task-content-wrapper">
+              <div class="task-main">
+                <button 
+                  class="done-btn" 
+                  (click)="isTask(item) ? markAsUndone(item) : toggleSubtaskDone(item)"
+                  [attr.aria-label]="'Mark as incomplete'"
+                >
+                  <span class="material-icons">check_circle</span>
+                </button>
+                <div class="task-content">
+                  <span class="task-name">{{ item.name }}</span>
+                  <div class="task-meta" *ngIf="isTask(item) && item.scheduledAt">
+                    <!-- <span class="due-date">{{ formatDate(item.scheduledAt) }}</span> -->
+                  </div>
+                </div>
+              </div>
+              <div class="task-actions">
+                <button 
+                  class="delete-btn" 
+                  (click)="deleteSubtaskFromCompleted(item); $event.stopPropagation()"
+                  title="Delete"
+                  aria-label="Delete"
+                >
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="subtask-parent-info" *ngIf="!isTask(item)">
+              <!-- <span class="material-icons">subdirectory_arrow_right</span> -->
+              <span class="parent-task-name">
+                {{ getParentTask(item)?.name || '' }}
+              </span>
+            </div>
           </div>
         </div>
       </div>
