@@ -69,7 +69,6 @@ export class TodayComponent implements OnInit {
     this.loadCategoriesFromLocalStorage();
   }
 
-  // Type guard methods
   isCompletedTask(item: CompletedItem): item is CompletedTask {
     return !item.isSubtask;
   }
@@ -87,7 +86,6 @@ export class TodayComponent implements OnInit {
     const savedTasks = localStorage.getItem('categoryTasks');
     if (savedTasks) {
       this.categoryTasks = JSON.parse(savedTasks);
-      // Convert string dates back to Date objects
       for (const category in this.categoryTasks) {
         this.categoryTasks[category] = this.categoryTasks[category].map(task => ({
           ...task,
@@ -152,7 +150,7 @@ export class TodayComponent implements OnInit {
           const [hours, minutes] = this.selectedTime.split(':');
           scheduledAt.setHours(parseInt(hours), parseInt(minutes));
         } else {
-          scheduledAt.setHours(23, 59); // Default to end of day
+          scheduledAt.setHours(23, 59); 
         }
       }
 
@@ -175,7 +173,6 @@ export class TodayComponent implements OnInit {
       this.categoryTasks[category].push(newTask);
       this.saveTasksToLocalStorage();
       
-      // Reset form
       this.newTaskName = '';
       this.selectedDate = '';
       this.selectedTime = '';
@@ -192,22 +189,18 @@ export class TodayComponent implements OnInit {
     return this.getTasksForCategory(category)
       .filter(task => !task.completed)
       .sort((a, b) => {
-        // Sort by priority first
         const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2, 'None': 3 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
           return priorityOrder[a.priority] - priorityOrder[b.priority];
         }
-        // Then by pinned status
         if (a.pinned !== b.pinned) {
           return a.pinned ? -1 : 1;
         }
-        // Then by due date
         if (a.scheduledAt && !b.scheduledAt) return -1;
         if (!a.scheduledAt && b.scheduledAt) return 1;
         if (a.scheduledAt && b.scheduledAt) {
           return a.scheduledAt.getTime() - b.scheduledAt.getTime();
         }
-        // Finally by creation date
         return a.createdAt.getTime() - b.createdAt.getTime();
       });
   }
@@ -217,7 +210,6 @@ export class TodayComponent implements OnInit {
     const tasks = this.getTasksForCategory(category);
     const completed: CompletedItem[] = [];
     
-    // Add completed main tasks
     tasks
       .filter(task => task.completed)
       .forEach(task => completed.push({ 
@@ -225,7 +217,6 @@ export class TodayComponent implements OnInit {
         isSubtask: false 
       }));
 
-    // Add completed subtasks with parent info
     tasks.forEach(task => {
       if (task.subtasks) {
         task.subtasks
@@ -238,7 +229,6 @@ export class TodayComponent implements OnInit {
       }
     });
 
-    // Sort by completion time (newest first)
     return completed.sort((a, b) => {
       const aDate = a.isSubtask ? 
         this.getParentTask(a)?.updatedAt?.getTime() || 0 : 
@@ -265,49 +255,17 @@ export class TodayComponent implements OnInit {
     this.saveTasksToLocalStorage();
   }
 
-  // markAsUndone(item: CompletedItem) {
-  //   const category = this.activeCategory || 'Today';
-    
-  //   if (this.isCompletedTask(item)) {
-  //     // Handle main task
-  //     item.completed = false;
-  //     item.completedAt = undefined;
-  //     item.updatedAt = new Date();
-      
-  //     // Mark subtasks as incomplete
-  //     if (item.subtasks) {
-  //       item.subtasks.forEach(subtask => {
-  //         subtask.completed = false;
-  //       });
-  //     }
-  //   } else if (this.isCompletedSubtask(item)) {
-  //     // Handle subtask
-  //     const parentTask = this.categoryTasks[category].find(t => t.id === item.parentTaskId);
-  //     if (parentTask?.subtasks) {
-  //       const subtask = parentTask.subtasks.find(s => s.id === item.id);
-  //       if (subtask) {
-  //         subtask.completed = false;
-  //       }
-  //       parentTask.updatedAt = new Date();
-  //     }
-  //   }
-    
-  //   this.saveTasksToLocalStorage();
-  // }
-
-
+ 
   markAsUndone(item: CompletedItem) {
   const category = this.activeCategory || 'Today';
   
   if (this.isCompletedTask(item)) {
-    // Handle main task
     const task = this.categoryTasks[category].find(t => t.id === item.id);
     if (task) {
       task.completed = false;
       task.completedAt = undefined;
       task.updatedAt = new Date();
       
-      // Mark subtasks as incomplete
       if (task.subtasks) {
         task.subtasks.forEach(subtask => {
           subtask.completed = false;
@@ -315,7 +273,6 @@ export class TodayComponent implements OnInit {
       }
     }
   } else if (this.isCompletedSubtask(item)) {
-    // Handle subtask
     const parentTask = this.categoryTasks[category].find(t => t.id === item.parentTaskId);
     if (parentTask?.subtasks) {
       const subtask = parentTask.subtasks.find(s => s.id === item.id);
