@@ -1,5 +1,3 @@
-
-
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { SidenavComponent } from "../sidenav/sidenav.component";
@@ -30,7 +28,16 @@ interface Subtask {
   parentTaskId: number;
 }
 
-type CompletedItem = Task | Subtask;
+interface CompletedTask extends Task {
+  isSubtask: false;
+}
+
+interface CompletedSubtask extends Subtask {
+  isSubtask: true;
+  parentTaskName: string;
+}
+
+type CompletedItem = CompletedTask | CompletedSubtask;
 
 @Component({
   selector: 'app-today',
@@ -58,9 +65,17 @@ export class TodayComponent implements OnInit {
 
   ngOnInit(): void {
     this.setMinDate();
-    this.checkTasksForToday();
     this.loadTasksFromLocalStorage();
     this.loadCategoriesFromLocalStorage();
+  }
+
+  // Type guard methods
+  isCompletedTask(item: CompletedItem): item is CompletedTask {
+    return !item.isSubtask;
+  }
+
+  isCompletedSubtask(item: CompletedItem): item is CompletedSubtask {
+    return item.isSubtask;
   }
 
   private setMinDate() {
@@ -71,18 +86,17 @@ export class TodayComponent implements OnInit {
   private loadTasksFromLocalStorage() {
     const savedTasks = localStorage.getItem('categoryTasks');
     if (savedTasks) {
-      const parsedTasks = JSON.parse(savedTasks);
-      
-      for (const category in parsedTasks) {
-        this.categoryTasks[category] = parsedTasks[category].map((task: any) => ({
+      this.categoryTasks = JSON.parse(savedTasks);
+      // Convert string dates back to Date objects
+      for (const category in this.categoryTasks) {
+        this.categoryTasks[category] = this.categoryTasks[category].map(task => ({
           ...task,
           createdAt: new Date(task.createdAt),
           updatedAt: new Date(task.updatedAt),
           scheduledAt: task.scheduledAt ? new Date(task.scheduledAt) : undefined,
           completedAt: task.completedAt ? new Date(task.completedAt) : undefined,
-          subtasks: task.subtasks ? task.subtasks.map((subtask: any) => ({ 
-            ...subtask,
-            parentTaskId: task.id 
+          subtasks: task.subtasks ? task.subtasks.map(subtask => ({
+            ...subtask
           })) : []
         }));
       }
@@ -114,16 +128,11 @@ export class TodayComponent implements OnInit {
 
   addCategory(categoryName: string) {
     if (categoryName.trim()) {
-      this.categories = this.todoservice.addCategory(categoryName.trim());
-      
-      if (!this.categoryTasks[categoryName]) {
-        this.categoryTasks[categoryName] = [];
-      }
-      
+      this.categories.push(categoryName.trim());
+      this.categoryTasks[categoryName.trim()] = [];
       this.saveCategoriesToLocalStorage();
       this.saveTasksToLocalStorage();
       this.hideAddCategoryModal();
-      this.router.navigate(['/today']);
     }
   }
 
@@ -133,115 +142,117 @@ export class TodayComponent implements OnInit {
 
   addTask() {
     if (this.newTaskName.trim()) {
-      const category = 'Today'; 
+      const category = this.activeCategory || 'Today';
       const now = new Date();
       
       let scheduledAt: Date | undefined;
       if (this.selectedDate) {
-        let dateTimeString = this.selectedDate;
+        scheduledAt = new Date(this.selectedDate);
         if (this.selectedTime) {
-          dateTimeString += `T${this.selectedTime}`;
+          const [hours, minutes] = this.selectedTime.split(':');
+          scheduledAt.setHours(parseInt(hours), parseInt(minutes));
         } else {
-          dateTimeString += 'T23:59';
+          scheduledAt.setHours(23, 59); // Default to end of day
         }
-        scheduledAt = new Date(dateTimeString);
       }
 
       if (!this.categoryTasks[category]) {
         this.categoryTasks[category] = [];
       }
       
-      if (!this.categoryTasks[category].some(t => t.name === this.newTaskName.trim())) {
-        this.categoryTasks[category].push({
-          id: Date.now(),
-          name: this.newTaskName.trim(),
-          completed: false,
-          pinned: false,
-          priority: this.newTaskPriority,
-          createdAt: now,
-          scheduledAt: scheduledAt,
-          updatedAt: now,
-          subtasks: []
-        });
-        
-        this.saveTasksToLocalStorage();
-        this.newTaskName = '';
-        this.selectedDate = '';
-        this.selectedTime = '';
-        this.newTaskPriority = 'None';
-      } 
+      const newTask: Task = {
+        id: Date.now(),
+        name: this.newTaskName.trim(),
+        completed: false,
+        pinned: false,
+        priority: this.newTaskPriority,
+        createdAt: now,
+        scheduledAt,
+        updatedAt: now,
+        subtasks: []
+      };
+      
+      this.categoryTasks[category].push(newTask);
+      this.saveTasksToLocalStorage();
+      
+      // Reset form
+      this.newTaskName = '';
+      this.selectedDate = '';
+      this.selectedTime = '';
+      this.newTaskPriority = 'None';
     }
   }
 
-  isPastDue(date: Date): boolean {
-    if (!date) return false;
-    return new Date(date) < new Date();
-  }
-
-  toggleMenu(): void {
-    this.isMenuOpen = !this.isMenuOpen;
-  }
-
-  closeMenu(): void {
-    this.isMenuOpen = false;
-  }
-
-  private checkTasksForToday(): void {
-    console.log('Checking tasks for today...');
-  }
-
-  getTasksForCategory(category: string) {
+  getTasksForCategory(category: string): Task[] {
     return this.categoryTasks[category] || [];
   }
 
-  get activeTasks() {
+  get activeTasks(): Task[] {
     const category = this.activeCategory || 'Today';
     return this.getTasksForCategory(category)
       .filter(task => !task.completed)
       .sort((a, b) => {
+        // Sort by priority first
         const priorityOrder = { 'High': 0, 'Medium': 1, 'Low': 2, 'None': 3 };
         if (priorityOrder[a.priority] !== priorityOrder[b.priority]) {
           return priorityOrder[a.priority] - priorityOrder[b.priority];
         }
+        // Then by pinned status
         if (a.pinned !== b.pinned) {
           return a.pinned ? -1 : 1;
         }
+        // Then by due date
         if (a.scheduledAt && !b.scheduledAt) return -1;
         if (!a.scheduledAt && b.scheduledAt) return 1;
         if (a.scheduledAt && b.scheduledAt) {
-          return new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime();
+          return a.scheduledAt.getTime() - b.scheduledAt.getTime();
         }
-        return 0;
+        // Finally by creation date
+        return a.createdAt.getTime() - b.createdAt.getTime();
       });
   }
-  
+
   get completedTasks(): CompletedItem[] {
     const category = this.activeCategory || 'Today';
     const tasks = this.getTasksForCategory(category);
+    const completed: CompletedItem[] = [];
+    
+    // Add completed main tasks
+    tasks
+      .filter(task => task.completed)
+      .forEach(task => completed.push({ 
+        ...task, 
+        isSubtask: false 
+      }));
 
-    const completedParents = tasks.filter(task => task.completed);
+    // Add completed subtasks with parent info
+    tasks.forEach(task => {
+      if (task.subtasks) {
+        task.subtasks
+          .filter(subtask => subtask.completed)
+          .forEach(subtask => completed.push({
+            ...subtask,
+            isSubtask: true,
+            parentTaskName: task.name
+          }));
+      }
+    });
 
-    const completedStandaloneSubtasks = tasks
-      .filter(task => !task.completed && task.subtasks)
-      .flatMap(task => 
-        task.subtasks!.filter(subtask => subtask.completed)
-      );
-
-    return [...completedParents, ...completedStandaloneSubtasks].sort((a, b) => {
-      const aDate = this.isTask(a) ? a.completedAt : this.getParentTask(a as Subtask)?.updatedAt;
-      const bDate = this.isTask(b) ? b.completedAt : this.getParentTask(b as Subtask)?.updatedAt;
-      return (bDate ? bDate.getTime() : 0) - (aDate ? aDate.getTime() : 0);
+    // Sort by completion time (newest first)
+    return completed.sort((a, b) => {
+      const aDate = a.isSubtask ? 
+        this.getParentTask(a)?.updatedAt?.getTime() || 0 : 
+        a.completedAt?.getTime() || 0;
+      const bDate = b.isSubtask ? 
+        this.getParentTask(b)?.updatedAt?.getTime() || 0 : 
+        b.completedAt?.getTime() || 0;
+      return bDate - aDate;
     });
   }
 
-  isTask(item: CompletedItem): item is Task {
-    return 'subtasks' in item;
-  }
-
-  getParentTask(subtask: Subtask): Task | undefined {
+  getParentTask(subtask: CompletedSubtask): Task | undefined {
     const category = this.activeCategory || 'Today';
-    const tasks = this.categoryTasks[category];
-    return tasks.find(task => task.id === subtask.parentTaskId);
+    return this.categoryTasks[category]?.find(t => t.id === subtask.parentTaskId);
   }
 
   markAsDone(task: Task) {
@@ -254,12 +265,69 @@ export class TodayComponent implements OnInit {
     this.saveTasksToLocalStorage();
   }
 
-  markAsUndone(task: Task) {
-    task.completed = false;
-    task.completedAt = undefined;
-    task.updatedAt = new Date();
-    this.saveTasksToLocalStorage();
+  // markAsUndone(item: CompletedItem) {
+  //   const category = this.activeCategory || 'Today';
+    
+  //   if (this.isCompletedTask(item)) {
+  //     // Handle main task
+  //     item.completed = false;
+  //     item.completedAt = undefined;
+  //     item.updatedAt = new Date();
+      
+  //     // Mark subtasks as incomplete
+  //     if (item.subtasks) {
+  //       item.subtasks.forEach(subtask => {
+  //         subtask.completed = false;
+  //       });
+  //     }
+  //   } else if (this.isCompletedSubtask(item)) {
+  //     // Handle subtask
+  //     const parentTask = this.categoryTasks[category].find(t => t.id === item.parentTaskId);
+  //     if (parentTask?.subtasks) {
+  //       const subtask = parentTask.subtasks.find(s => s.id === item.id);
+  //       if (subtask) {
+  //         subtask.completed = false;
+  //       }
+  //       parentTask.updatedAt = new Date();
+  //     }
+  //   }
+    
+  //   this.saveTasksToLocalStorage();
+  // }
+
+
+  markAsUndone(item: CompletedItem) {
+  const category = this.activeCategory || 'Today';
+  
+  if (this.isCompletedTask(item)) {
+    // Handle main task
+    const task = this.categoryTasks[category].find(t => t.id === item.id);
+    if (task) {
+      task.completed = false;
+      task.completedAt = undefined;
+      task.updatedAt = new Date();
+      
+      // Mark subtasks as incomplete
+      if (task.subtasks) {
+        task.subtasks.forEach(subtask => {
+          subtask.completed = false;
+        });
+      }
+    }
+  } else if (this.isCompletedSubtask(item)) {
+    // Handle subtask
+    const parentTask = this.categoryTasks[category].find(t => t.id === item.parentTaskId);
+    if (parentTask?.subtasks) {
+      const subtask = parentTask.subtasks.find(s => s.id === item.id);
+      if (subtask) {
+        subtask.completed = false;
+      }
+      parentTask.updatedAt = new Date();
+    }
   }
+  
+  this.saveTasksToLocalStorage();
+}
 
   togglePin(task: Task) {
     task.pinned = !task.pinned;
@@ -280,7 +348,9 @@ export class TodayComponent implements OnInit {
 
   addSubtask(task: Task) {
     if (task.newSubtaskName?.trim()) {
-      if (!task.subtasks) task.subtasks = [];
+      if (!task.subtasks) {
+        task.subtasks = [];
+      }
       task.subtasks.push({
         id: Date.now(),
         name: task.newSubtaskName.trim(),
@@ -304,7 +374,7 @@ export class TodayComponent implements OnInit {
 
   toggleSubtaskDone(subtask: Subtask) {
     subtask.completed = !subtask.completed;
-    const parentTask = this.getParentTask(subtask);
+    const parentTask = this.categoryTasks[this.activeCategory || 'Today']?.find(t => t.id === subtask.parentTaskId);
     if (parentTask) {
       parentTask.updatedAt = new Date();
     }
@@ -314,7 +384,7 @@ export class TodayComponent implements OnInit {
   deleteSubtaskFromCompleted(item: CompletedItem) {
     const category = this.activeCategory || 'Today';
     
-    if (this.isTask(item)) {
+    if (!item.isSubtask) {
       this.categoryTasks[category] = this.categoryTasks[category].filter(t => t.id !== item.id);
     } else {
       const parentTask = this.categoryTasks[category].find(t => t.id === item.parentTaskId);
@@ -340,8 +410,16 @@ export class TodayComponent implements OnInit {
     this.categoryTasks[category] = this.categoryTasks[category].filter(t => t.id !== task.id);
     this.saveTasksToLocalStorage();
   }
-  
-  formatDate(date: Date): string {
+
+  toggleMenu() {
+    this.isMenuOpen = !this.isMenuOpen;
+  }
+
+  closeMenu() {
+    this.isMenuOpen = false;
+  }
+
+  formatDate(date: Date | undefined): string {
     if (!date) return '';
     
     const taskDate = new Date(date);

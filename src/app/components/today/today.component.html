@@ -219,27 +219,30 @@
 
       <div class="completed-section" *ngIf="completedTasks.length > 0">
         <div class="completed-header">
-          <span>Completed ({{completedTasks.length}})</span>
+          <span>Completed</span>
         </div>
         <div class="tasks-list completed">
           <div 
             class="task-item done"
+            [class.subtask]="isCompletedSubtask(item)"
             *ngFor="let item of completedTasks"
-            [class.subtask-item]="!isTask(item)"
           >
             <div class="task-content-wrapper">
               <div class="task-main">
                 <button 
                   class="done-btn" 
-                  (click)="isTask(item) ? markAsUndone(item) : toggleSubtaskDone(item)"
+                  (click)="isCompletedSubtask(item) ? toggleSubtaskDone(item) : markAsUndone(item)"
                   [attr.aria-label]="'Mark as incomplete'"
                 >
                   <span class="material-icons">check_circle</span>
                 </button>
                 <div class="task-content">
                   <span class="task-name">{{ item.name }}</span>
-                  <div class="task-meta" *ngIf="isTask(item) && item.scheduledAt">
+                  <div class="task-meta" *ngIf="isCompletedTask(item) && item.scheduledAt">
                     <!-- <span class="due-date">{{ formatDate(item.scheduledAt) }}</span> -->
+                  </div>
+                  <div class="parent-task-name" *ngIf="isCompletedSubtask(item)">
+                    <span>{{ item.parentTaskName }}</span>
                   </div>
                 </div>
               </div>
@@ -253,13 +256,6 @@
                   <span class="material-icons">delete</span>
                 </button>
               </div>
-            </div>
-            
-            <div class="subtask-parent-info" *ngIf="!isTask(item)">
-              <!-- <span class="material-icons">subdirectory_arrow_right</span> -->
-              <span class="parent-task-name">
-                {{ getParentTask(item)?.name || '' }}
-              </span>
             </div>
           </div>
         </div>
